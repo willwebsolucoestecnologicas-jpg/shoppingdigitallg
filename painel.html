@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do Lojista | Shopping Digital</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a0a0b;
+      --card-bg: #16161a;
+      --neon-blue: #00f2ff;
+      --neon-purple: #bc13fe;
+      --neon-gold: #ffd700;
+      --text-gray: #a0a0a8;
+      --text-white: #ffffff;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background-color: var(--bg-dark); color: var(--text-white); padding: 20px; display: flex; justify-content: center; }
+    
+    .panel-container { width: 100%; max-width: 500px; background: var(--card-bg); padding: 25px; border-radius: 15px; border: 1px solid #333; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+    h1 { font-size: 1.5rem; margin-bottom: 5px; color: var(--text-white); }
+    .subtitle { font-size: 0.85rem; color: var(--text-gray); margin-bottom: 25px; }
+    .neon-txt { color: var(--neon-blue); }
+
+    .form-group { margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px; }
+    label { font-size: 0.9rem; font-weight: bold; color: var(--text-gray); }
+    input[type="text"], input[type="number"], select, textarea { width: 100%; padding: 12px; background: #0f0f12; border: 1px solid #333; border-radius: 8px; color: white; font-size: 1rem; outline: none; transition: 0.3s; }
+    input:focus, select:focus, textarea:focus { border-color: var(--neon-blue); box-shadow: 0 0 8px rgba(0,242,255,0.2); }
+    
+    .premium-box { background: rgba(255, 215, 0, 0.05); border: 1px dashed var(--neon-gold); padding: 15px; border-radius: 8px; margin-top: 10px; }
+    .premium-box label { color: var(--neon-gold); cursor: pointer; display: flex; align-items: center; gap: 10px; }
+    .premium-box input { width: 18px; height: 18px; accent-color: var(--neon-gold); }
+    .premium-desc { font-size: 0.75rem; color: var(--text-gray); margin-top: 5px; padding-left: 28px; }
+
+    .btn-submit { width: 100%; background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple)); color: white; border: none; padding: 14px; border-radius: 8px; font-size: 1rem; font-weight: bold; text-transform: uppercase; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+    .btn-submit:hover { opacity: 0.9; transform: translateY(-2px); }
+    .btn-submit:disabled { background: #444; color: #888; cursor: not-allowed; transform: none; }
+
+    #preview { width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px; display: none; margin-top: 10px; border: 1px solid #333; }
+    .status-msg { margin-top: 15px; text-align: center; font-weight: bold; font-size: 0.9rem; display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="panel-container">
+    <h1>Painel do Lojista</h1>
+    <p class="subtitle">Cadastre seus melhores produtos na vitrine de <span class="neon-txt">Luís Gomes</span></p>
+
+    <form id="productForm">
+      <div class="form-group">
+        <label for="loja_id">Código Identificador da Loja (ID):</label>
+        <input type="number" id="loja_id" required placeholder="Ex: 1">
+      </div>
+
+      <div class="form-group">
+        <label for="nome">Nome do Produto:</label>
+        <input type="text" id="nome" required placeholder="Ex: Vestido Floral Midi">
+      </div>
+
+      <div class="form-group">
+        <label for="categoria">Categoria:</label>
+        <select id="categoria" required>
+          <option value="">Selecione uma categoria...</option>
+          <option value="Moda">Moda</option>
+          <option value="Bolsas">Bolsas</option>
+          <option value="Brinquedos">Brinquedos</option>
+          <option value="Decoração">Decoração</option>
+          <option value="Perfumaria">Perfumaria</option>
+          <option value="Outros">Outros</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="preco">Preço de Venda (R$):</label>
+        <input type="text" id="preco" required placeholder="Ex: 89.90">
+      </div>
+
+      <div class="form-group">
+        <label for="estoque">Quantidade em Estoque:</label>
+        <input type="number" id="estoque" required placeholder="Ex: 5">
+      </div>
+
+      <div class="form-group">
+        <label for="descricao">Descrição Curta do Produto:</label>
+        <textarea id="descricao" rows="3" placeholder="Detalhes sobre tamanho, cor ou material..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="fotoInput">Foto do Produto:</label>
+        <input type="file" id="fotoInput" accept="image/*" required onchange="verPreview(event)">
+        <img id="preview" alt="Preview da imagem">
+      </div>
+
+      <div class="premium-box">
+        <label>
+          <input type="checkbox" id="patrocinadoCheck">
+          🚀 Ativar Destaque Premium (Patrocinado)
+        </label>
+        <p class="premium-desc">Seu produto aparecerá no carrossel do topo com borda dourada. (Sujeito a ativação após confirmação do Pix de patrocínio).</p>
+      </div>
+
+      <button type="submit" class="btn-submit" id="btnEnviar">Publicar Produto</button>
+      <div id="statusMsg" class="status-msg"></div>
+    </form>
+  </div>
+
+  <script>
+    // ⚠️ ATENÇÃO: Cole aqui a exata mesma URL do seu Web App do Google Apps Script
+    const API_URL = "https://script.google.com/macros/s/AKfycbyQ1kAGgEmsp9tgcJOtWq59nKZylH4IamMmkudXPAZJ50O31iTsA3CBAQ-vOjNi1VHNlw/exec";
+    
+    let imagemBase64 = "";
+    let nomeImagem = "";
+
+    function verPreview(event) {
+      const file = event.target.files[0];
+      if (file) {
+        nomeImagem = file.name;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          imagemBase64 = e.target.result;
+          const preview = document.getElementById('preview');
+          preview.src = e.target.result;
+          preview.style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+      }
+    }
+
+    document.getElementById('productForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const btn = document.getElementById('btnEnviar');
+      const status = document.getElementById('statusMsg');
+      
+      btn.disabled = true;
+      btn.innerText = "Enviando para o Servidor...";
+      status.style.display = 'block';
+      status.style.color = 'var(--neon-blue)';
+      status.innerText = "Processando imagem e salvando dados...";
+
+      // Trata o preço substituindo vírgula por ponto para o banco ler corretamente
+      let precoFormatado = document.getElementById('preco').value.replace(',', '.');
+
+      const payload = {
+        loja_id: document.getElementById('loja_id').value,
+        nome: document.getElementById('nome').value,
+        categoria: document.getElementById('categoria').value,
+        preco: parseFloat(precoFormatado).toFixed(2),
+        estoque: document.getElementById('estoque').value,
+        descricao: document.getElementById('descricao').value,
+        patrocinado: document.getElementById('patrocinadoCheck').checked ? "sim" : "",
+        imagemBase64: imagemBase64,
+        nomeImagem: nomeImagem
+      };
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        const resultado = await response.json();
+
+        if (resultado.sucesso) {
+          status.style.color = '#25D366';
+          status.innerText = "🎉 Produto cadastrado com sucesso na vitrine!";
+          document.getElementById('productForm').reset();
+          document.getElementById('preview').style.display = 'none';
+          imagemBase64 = "";
+          nomeImagem = "";
+        } else {
+          throw new Error(resultado.erro);
+        }
+      } catch (error) {
+        status.style.color = 'red';
+        status.innerText = "❌ Erro no cadastro. Verifique a conexão.";
+        console.error(error);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Publicar Produto";
+      }
+    });
+  </script>
+</body>
+</html>

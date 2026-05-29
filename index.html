@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopping Digital | Luís Gomes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <span class="neon-text">LG</span> DIGITAL SHOPPING
+    </div>
+    <div class="cart-icon" onclick="toggleCarrinho()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="9" cy="21" r="1"></circle>
+        <circle cx="20" cy="21" r="1"></circle>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+      </svg>
+      <span id="cart-count">0</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="search-area">
+      <input type="text" id="searchInput" placeholder="O que você procura em Luís Gomes?" onkeyup="filtrarBusca()">
+    </section>
+
+    <section class="banner-area" id="bannerArea"></section>
+
+    <section class="categories-area" id="categoriesArea"></section>
+
+    <section class="stores-area">
+      <h2 class="section-title">Lojas Parceiras</h2>
+      <div id="listaLojas" class="stores-container"></div>
+    </section>
+
+    <div class="feed-header">
+      <div>
+        <h2 id="tituloVitrine">Todos os Produtos</h2>
+        <button id="btnLimparFiltro" onclick="limparFiltros()" style="display: none;">Limpar Filtros</button>
+      </div>
+      <select id="sortSelect" onchange="ordenarProdutos()">
+        <option value="recentes">Mais Recentes</option>
+        <option value="menorPreco">Menor Preço</option>
+        <option value="maiorPreco">Maior Preço</option>
+      </select>
+    </div>
+
+    <section id="vitrine" class="product-grid">
+      <div class="loader" id="loader">Conectando aos servidores...</div>
+    </section>
+  </main>
+
+  <div id="modalCarrinho" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="toggleCarrinho()">&times;</span>
+      <h2>Seu Carrinho</h2>
+      <div id="itensCarrinho"></div>
+      <div class="total-area">
+        <p>Total: <span id="valorTotal">R$ 0,00</span></p>
+        <button class="btn-checkout" onclick="finalizarPedido()">Finalizar via WhatsApp</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalDetalhes" class="modal">
+    <div class="modal-content" id="conteudoDetalhes">
+      </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
