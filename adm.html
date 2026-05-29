@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Master | WillWeb</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a0a0b; --card-bg: #16161a; --neon-blue: #00f2ff;
+      --neon-purple: #bc13fe; --neon-gold: #ffd700; --text-white: #ffffff;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background-color: var(--bg-dark); color: var(--text-white); padding: 20px; }
+    
+    header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 20px; margin-bottom: 20px; }
+    h1 { color: var(--neon-blue); }
+    
+    table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 10px; overflow: hidden; }
+    th, td { padding: 15px; text-align: left; border-bottom: 1px solid #333; }
+    th { background-color: #202028; color: var(--neon-purple); text-transform: uppercase; font-size: 0.85rem; }
+    img.thumb { width: 40px; height: 40px; border-radius: 5px; object-fit: cover; }
+    
+    .status-sim { color: var(--neon-gold); font-weight: bold; }
+    .status-pendente { color: #ff9800; font-weight: bold; }
+    
+    button { padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.8rem; transition: 0.3s; margin-right: 5px; }
+    .btn-aprovar { background: #25D366; color: white; }
+    .btn-remover { background: #444; color: white; }
+    .btn-excluir { background: #ff3366; color: white; }
+    button:hover { opacity: 0.8; }
+    
+    .loader { text-align: center; padding: 50px; color: var(--neon-blue); font-size: 1.2rem; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>⚙️ Painel ADM - Shopping Digital</h1>
+    <p>Aprovações e Controle de Estoque Global</p>
+  </header>
+
+  <div id="loader" class="loader">Carregando banco de dados...</div>
+
+  <table id="tabelaAdmin" style="display: none;">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Foto</th>
+        <th>Produto</th>
+        <th>Loja ID</th>
+        <th>Preço (R$)</th>
+        <th>Status Patrocínio</th>
+        <th>Ações Mestre</th>
+      </tr>
+    </thead>
+    <tbody id="listaProdutos"></tbody>
+  </table>
+
+  <script>
+    // ⚠️ COLOQUE A MESMA URL DO SEU APPS SCRIPT AQUI
+    const API_URL = "https://script.google.com/macros/s/AKfycbyQ1kAGgEmsp9tgcJOtWq59nKZylH4IamMmkudXPAZJ50O31iTsA3CBAQ-vOjNi1VHNlw/exec";
+
+    window.onload = carregarDados;
+
+    async function carregarDados() {
+      const res = await fetch(API_URL);
+      const dados = await res.json();
+      renderizarTabela(dados.produtos);
+    }
+
+    function renderizarTabela(produtos) {
+      const tbody = document.getElementById('listaProdutos');
+      tbody.innerHTML = produtos.reverse().map(p => {
+        
+        let statusHtml = p.patrocinado;
+        let btnPatrocinio = '';
+
+        if (p.patrocinado === 'pendente') {
+          statusHtml = '<span class="status-pendente">⏳ Pendente (Aguardando Pix)</span>';
+          btnPatrocinio = `<button class="btn-aprovar" onclick="atualizarPatrocinio('${p.id}', 'sim')">✅ Aprovar Destaque</button>`;
+        } else if (p.patrocinado === 'sim') {
+          statusHtml = '<span class="status-sim">⭐ Ativo no Topo</span>';
+          btnPatrocinio = `<button class="btn-remover" onclick="atualizarPatrocinio('${p.id}', '')">❌ Remover Destaque</button>`;
+        } else {
+          statusHtml = '<span style="color: #666;">Padrão</span>';
+          btnPatrocinio = `<button class="btn-aprovar" onclick="atualizarPatrocinio('${p.id}', 'sim')" style="background: #333;">Forçar Destaque</button>`;
+        }
+
+        return `
+          <tr>
+            <td>#${p.id}</td>
+            <td><img src="${p.imagem_url}" class="thumb"></td>
+            <td><strong>${p.nome}</strong></td>
+            <td>${p.loja_id}</td>
+            <td>${parseFloat(p.preco).toFixed(2).replace('.', ',')}</td>
+            <td>${statusHtml}</td>
+            <td>
+              ${btnPatrocinio}
+              <button class="btn-excluir" onclick="excluirProduto('${p.id}', '${p.nome}')">🗑️ Excluir</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('tabelaAdmin').style.display = 'table';
+    }
+
+    async function atualizarPatrocinio(id, novoStatus) {
+      if (!confirm(`Confirma a alteração de patrocínio do produto #${id}?`)) return;
+      
+      try {
+        await fetch(API_URL, {
+          method: 'POST',
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ acao: 'atualizar_patrocinio', id: id, novoStatus: novoStatus })
+        });
+        alert('Status atualizado! Recarregando painel...');
+        location.reload();
+      } catch (e) {
+        alert('Erro ao atualizar: ' + e);
+      }
+    }
+
+    async function excluirProduto(id, nome) {
+      if (!confirm(`ATENÇÃO: Deseja realmente APAGAR o produto "${nome}" do banco de dados?`)) return;
+      
+      try {
+        await fetch(API_URL, {
+          method: 'POST',
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ acao: 'excluir_produto', id: id })
+        });
+        alert('Produto excluído com sucesso!');
+        location.reload();
+      } catch (e) {
+        alert('Erro ao excluir: ' + e);
+      }
+    }
+  </script>
+</body>
+</html>
