@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel do Lojista | Shopping Digital</title>
+  <title>Painel do Lojista | Shopping Digital LG</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -29,9 +29,9 @@
     input:focus, select:focus, textarea:focus { border-color: var(--neon-blue); box-shadow: 0 0 8px rgba(0,242,255,0.2); }
     
     .premium-box { background: rgba(255, 215, 0, 0.05); border: 1px dashed var(--neon-gold); padding: 15px; border-radius: 8px; margin-top: 10px; }
-    .premium-box label { color: var(--neon-gold); cursor: pointer; display: flex; align-items: center; gap: 10px; }
+    .premium-box label { color: var(--neon-gold); cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: bold; }
     .premium-box input { width: 18px; height: 18px; accent-color: var(--neon-gold); }
-    .premium-desc { font-size: 0.75rem; color: var(--text-gray); margin-top: 5px; padding-left: 28px; }
+    .premium-desc { font-size: 0.75rem; color: var(--text-gray); margin-top: 5px; padding-left: 28px; line-height: 1.4; }
 
     .btn-submit { width: 100%; background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple)); color: white; border: none; padding: 14px; border-radius: 8px; font-size: 1rem; font-weight: bold; text-transform: uppercase; cursor: pointer; transition: 0.3s; margin-top: 10px; }
     .btn-submit:hover { opacity: 0.9; transform: translateY(-2px); }
@@ -45,11 +45,11 @@
 
   <div class="panel-container">
     <h1>Painel do Lojista</h1>
-    <p class="subtitle">Cadastre seus melhores produtos na vitrine de <span class="neon-txt">Luís Gomes</span></p>
+    <p class="subtitle">Cadastre seus produtos na vitrine de <span class="neon-txt">Luís Gomes</span></p>
 
     <form id="productForm">
       <div class="form-group">
-        <label for="loja_id">Código Identificador da Loja (ID):</label>
+        <label for="loja_id">Código da Sua Loja (ID):</label>
         <input type="number" id="loja_id" required placeholder="Ex: 1">
       </div>
 
@@ -95,9 +95,9 @@
       <div class="premium-box">
         <label>
           <input type="checkbox" id="patrocinadoCheck">
-          🚀 Ativar Destaque Premium (Patrocinado)
+          🚀 Solicitar Destaque Premium
         </label>
-        <p class="premium-desc">Seu produto aparecerá no carrossel do topo com borda dourada. (Sujeito a ativação após confirmação do Pix de patrocínio).</p>
+        <p class="premium-desc">Seu produto aparecerá no carrossel do topo com borda dourada. O destaque será ativado pela administração após a confirmação do patrocínio.</p>
       </div>
 
       <button type="submit" class="btn-submit" id="btnEnviar">Publicar Produto</button>
@@ -106,7 +106,7 @@
   </div>
 
   <script>
-    // ⚠️ ATENÇÃO: Cole aqui a exata mesma URL do seu Web App do Google Apps Script
+    // URL do seu Google Apps Script 
     const API_URL = "https://script.google.com/macros/s/AKfycbyQ1kAGgEmsp9tgcJOtWq59nKZylH4IamMmkudXPAZJ50O31iTsA3CBAQ-vOjNi1VHNlw/exec";
     
     let imagemBase64 = "";
@@ -149,7 +149,8 @@
         preco: parseFloat(precoFormatado).toFixed(2),
         estoque: document.getElementById('estoque').value,
         descricao: document.getElementById('descricao').value,
-        patrocinado: document.getElementById('patrocinadoCheck').checked ? "sim" : "",
+        // Envia "pendente" se o lojista marcar a caixa de destaque
+        patrocinado: document.getElementById('patrocinadoCheck').checked ? "pendente" : "",
         imagemBase64: imagemBase64,
         nomeImagem: nomeImagem
       };
@@ -157,6 +158,10 @@
       try {
         const response = await fetch(API_URL, {
           method: 'POST',
+          // O header de texto puro evita o bloqueio de CORS nos navegadores
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8",
+          },
           body: JSON.stringify(payload)
         });
         const resultado = await response.json();
@@ -172,8 +177,8 @@
           throw new Error(resultado.erro);
         }
       } catch (error) {
-        status.style.color = 'red';
-        status.innerText = "❌ Erro no cadastro. Verifique a conexão.";
+        status.style.color = '#ff3366';
+        status.innerText = "❌ Erro no cadastro. Verifique sua conexão com a internet.";
         console.error(error);
       } finally {
         btn.disabled = false;
